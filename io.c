@@ -178,6 +178,7 @@ URL_t *urlOpen(char *fname, CURLcode (*callBack)(CURL*), const char *mode) {
         else URL->type = BWG_FILE;
 #else
         URL->type = BWG_FILE;
+        (void)callBack;
 #endif
 
         //local file?

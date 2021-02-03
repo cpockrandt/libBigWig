@@ -917,6 +917,7 @@ uint32_t overlapsInterval(uint32_t tid0, uint32_t start0, uint32_t end0, uint32_
 
 //Returns the number of bases of the interval written
 uint32_t updateInterval(bigWigFile_t *fp, bwZoomBuffer_t *buffer, double *sum, double *sumsq, uint32_t size, uint32_t tid, uint32_t start, uint32_t end, float value) {
+    (void)fp;
     uint32_t *p2 = (uint32_t*) buffer->p;
     float *fp2 = (float*) p2;
     uint32_t rv = 0, offset = 0;
