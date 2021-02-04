@@ -1,7 +1,7 @@
-CC ?= gcc
+CC ?= g++
 AR ?= ar
 RANLIB ?= ranlib
-CFLAGS ?= -g -Wall -Wextra -Werror -O3 -Wsign-compare -DNOCURL
+CFLAGS = -g -Wall -Wextra -Werror -O3 -Wsign-compare -DNOCURL
 LIBS = -lm -lz
 EXTRA_CFLAGS_PIC = -fpic
 LDFLAGS =
