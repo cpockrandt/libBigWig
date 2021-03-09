@@ -34,7 +34,7 @@ static bwRTree_t *readRTreeIdx(bigWigFile_t *fp, uint64_t offset) {
         return NULL;
     }
 
-    node = calloc(1, sizeof(bwRTree_t));
+    node = (bwRTree_t*) calloc(1, sizeof(bwRTree_t));
     if(!node) return NULL;
 
     if(bwRead(&(node->blockSize), sizeof(uint32_t), 1, fp) != 1) goto error;
@@ -72,28 +72,28 @@ static bwRTreeNode_t *bwGetRTreeNode(bigWigFile_t *fp, uint64_t offset) {
         if(bwSetPos(fp, fp->idx->rootOffset)) return NULL;
     }
 
-    node = calloc(1, sizeof(bwRTreeNode_t));
+    node = (bwRTreeNode_t*) calloc(1, sizeof(bwRTreeNode_t));
     if(!node) return NULL;
 
     if(bwRead(&(node->isLeaf), sizeof(uint8_t), 1, fp) != 1) goto error;
     if(bwRead(&padding, sizeof(uint8_t), 1, fp) != 1) goto error;
     if(bwRead(&(node->nChildren), sizeof(uint16_t), 1, fp) != 1) goto error;
 
-    node->chrIdxStart = malloc(sizeof(uint32_t)*(node->nChildren));
+    node->chrIdxStart = (uint32_t*) malloc(sizeof(uint32_t)*(node->nChildren));
     if(!node->chrIdxStart) goto error;
-    node->baseStart = malloc(sizeof(uint32_t)*(node->nChildren));
+    node->baseStart = (uint32_t*) malloc(sizeof(uint32_t)*(node->nChildren));
     if(!node->baseStart) goto error;
-    node->chrIdxEnd = malloc(sizeof(uint32_t)*(node->nChildren));
+    node->chrIdxEnd = (uint32_t*) malloc(sizeof(uint32_t)*(node->nChildren));
     if(!node->chrIdxEnd) goto error;
-    node->baseEnd = malloc(sizeof(uint32_t)*(node->nChildren));
+    node->baseEnd = (uint32_t*) malloc(sizeof(uint32_t)*(node->nChildren));
     if(!node->baseEnd) goto error;
-    node->dataOffset = malloc(sizeof(uint64_t)*(node->nChildren));
+    node->dataOffset = (uint64_t*) malloc(sizeof(uint64_t)*(node->nChildren));
     if(!node->dataOffset) goto error;
     if(node->isLeaf) {
-        node->x.size = malloc(node->nChildren * sizeof(uint64_t));
+        node->x.size = (uint64_t*) malloc(node->nChildren * sizeof(uint64_t));
         if(!node->x.size) goto error;
     } else {
-        node->x.child = calloc(node->nChildren, sizeof(struct bwRTreeNode_t *));
+        node->x.child = (bwRTreeNode_t**) calloc(node->nChildren, sizeof(struct bwRTreeNode_t *));
         if(!node->x.child) goto error;
     }
     for(i=0; i<node->nChildren; i++) {
@@ -131,7 +131,7 @@ void destroyBWOverlapBlock(bwOverlapBlock_t *b) {
 //Returns a bwOverlapBlock_t * object or NULL on error.
 static bwOverlapBlock_t *overlapsLeaf(bwRTreeNode_t *node, uint32_t tid, uint32_t start, uint32_t end) {
     uint16_t i, idx = 0;
-    bwOverlapBlock_t *o = calloc(1, sizeof(bwOverlapBlock_t));
+    bwOverlapBlock_t *o = (bwOverlapBlock_t*) calloc(1, sizeof(bwOverlapBlock_t));
     if(!o) return NULL;
 
     for(i=0; i<node->nChildren; i++) {
@@ -156,9 +156,9 @@ static bwOverlapBlock_t *overlapsLeaf(bwRTreeNode_t *node, uint32_t tid, uint32_
     }
 
     if(o->n) {
-        o->offset = malloc(sizeof(uint64_t) * (o->n));
+        o->offset = (uint64_t*) malloc(sizeof(uint64_t) * (o->n));
         if(!o->offset) goto error;
-        o->size = malloc(sizeof(uint64_t) * (o->n));
+        o->size = (uint64_t*) malloc(sizeof(uint64_t) * (o->n));
         if(!o->size) goto error;
 
         for(i=0; i<node->nChildren; i++) {
@@ -206,9 +206,9 @@ static bwOverlapBlock_t *mergeOverlapBlocks(bwOverlapBlock_t *b1, bwOverlapBlock
     }
     j = b1->n;
     b1->n += b2->n;
-    b1->offset = realloc(b1->offset, sizeof(uint64_t) * (b1->n+b2->n));
+    b1->offset = (uint64_t*) realloc(b1->offset, sizeof(uint64_t) * (b1->n+b2->n));
     if(!b1->offset) goto error;
-    b1->size = realloc(b1->size, sizeof(uint64_t) * (b1->n+b2->n));
+    b1->size = (uint64_t*) realloc(b1->size, sizeof(uint64_t) * (b1->n+b2->n));
     if(!b1->size) goto error;
 
     for(i=0; i<b2->n; i++) {
@@ -227,7 +227,7 @@ error:
 //The output needs to be free()d if not NULL (likewise with *sizes)
 static bwOverlapBlock_t *overlapsNonLeaf(bigWigFile_t *fp, bwRTreeNode_t *node, uint32_t tid, uint32_t start, uint32_t end) {
     uint16_t i;
-    bwOverlapBlock_t *nodeBlocks, *output = calloc(1, sizeof(bwOverlapBlock_t));
+    bwOverlapBlock_t *nodeBlocks, *output = (bwOverlapBlock_t*) calloc(1, sizeof(bwOverlapBlock_t));
     if(!output) return NULL;
 
     for(i=0; i<node->nChildren; i++) {
@@ -348,11 +348,11 @@ void bbDestroyOverlappingEntries(bbOverlappingEntries_t *o) {
 static bwOverlappingIntervals_t *pushIntervals(bwOverlappingIntervals_t *o, uint32_t start, uint32_t end, float value) {
     if(o->l+1 >= o->m) {
         o->m = roundup(o->l+1);
-        o->start = realloc(o->start, o->m * sizeof(uint32_t));
+        o->start = (uint32_t*) realloc(o->start, o->m * sizeof(uint32_t));
         if(!o->start) goto error;
-        o->end = realloc(o->end, o->m * sizeof(uint32_t));
+        o->end = (uint32_t*) realloc(o->end, o->m * sizeof(uint32_t));
         if(!o->end) goto error;
-        o->value = realloc(o->value, o->m * sizeof(float));
+        o->value = (float*) realloc(o->value, o->m * sizeof(float));
         if(!o->value) goto error;
     }
     o->start[o->l] = start;
@@ -368,12 +368,12 @@ error:
 static bbOverlappingEntries_t *pushBBIntervals(bbOverlappingEntries_t *o, uint32_t start, uint32_t end, char *str, int withString) {
     if(o->l+1 >= o->m) {
         o->m = roundup(o->l+1);
-        o->start = realloc(o->start, o->m * sizeof(uint32_t));
+        o->start = (uint32_t*) realloc(o->start, o->m * sizeof(uint32_t));
         if(!o->start) goto error;
-        o->end = realloc(o->end, o->m * sizeof(uint32_t));
+        o->end = (uint32_t*) realloc(o->end, o->m * sizeof(uint32_t));
         if(!o->end) goto error;
         if(withString) {
-            o->str = realloc(o->str, o->m * sizeof(char**));
+            o->str = (char**) realloc(o->str, o->m * sizeof(char*));
             if(!o->str) goto error;
         }
     }
@@ -398,7 +398,7 @@ bwOverlappingIntervals_t *bwGetOverlappingIntervalsCore(bigWigFile_t *fp, bwOver
     uint32_t start = 0, end , *p;
     float value;
     bwDataHeader_t hdr;
-    bwOverlappingIntervals_t *output = calloc(1, sizeof(bwOverlappingIntervals_t));
+    bwOverlappingIntervals_t *output = (bwOverlappingIntervals_t*) calloc(1, sizeof(bwOverlappingIntervals_t));
 
     if(!output) goto error;
 
@@ -423,7 +423,7 @@ bwOverlappingIntervals_t *bwGetOverlappingIntervalsCore(bigWigFile_t *fp, bwOver
         if(bwRead(compBuf, o->size[i], 1, fp) != 1) goto error;
         if(compressed) {
             tmp = fp->hdr->bufSize; //This gets over-written by uncompress
-            rv = uncompress(buf, (uLongf *) &tmp, compBuf, o->size[i]);
+            rv = uncompress((Bytef*) buf, &tmp, (const Bytef*) compBuf, o->size[i]);
             if(rv != Z_OK) goto error;
         } else {
             buf = compBuf;
@@ -492,7 +492,7 @@ bbOverlappingEntries_t *bbGetOverlappingEntriesCore(bigWigFile_t *fp, bwOverlapB
     void *buf = NULL, *bufEnd = NULL, *compBuf = NULL;
     uint32_t entryTid = 0, start = 0, end;
     char *str;
-    bbOverlappingEntries_t *output = calloc(1, sizeof(bbOverlappingEntries_t));
+    bbOverlappingEntries_t *output = (bbOverlappingEntries_t*) calloc(1, sizeof(bbOverlappingEntries_t));
 
     if(!output) goto error;
 
@@ -517,7 +517,7 @@ bbOverlappingEntries_t *bbGetOverlappingEntriesCore(bigWigFile_t *fp, bwOverlapB
         if(bwRead(compBuf, o->size[i], 1, fp) != 1) goto error;
         if(compressed) {
             tmp = fp->hdr->bufSize; //This gets over-written by uncompress
-            rv = uncompress(buf, (uLongf *) &tmp, compBuf, o->size[i]);
+            rv = uncompress((Bytef*) buf, &tmp, (const Bytef*) compBuf, o->size[i]);
             if(rv != Z_OK) goto error;
         } else {
             buf = compBuf;
@@ -589,7 +589,7 @@ bwOverlapIterator_t *bwOverlappingIntervalsIterator(bigWigFile_t *bw, char *chro
     uint64_t n;
     uint32_t tid = bwGetTid(bw, chrom);
     if(tid == (uint32_t) -1) return output;
-    output = calloc(1, sizeof(bwOverlapIterator_t));
+    output = (bwOverlapIterator_t*) calloc(1, sizeof(bwOverlapIterator_t));
     if(!output) return output;
     bwOverlapBlock_t *blocks = bwGetOverlappingBlocks(bw, chrom, start, end);
 
@@ -617,7 +617,7 @@ bwOverlapIterator_t *bbOverlappingEntriesIterator(bigWigFile_t *bw, char *chrom,
     uint64_t n;
     uint32_t tid = bwGetTid(bw, chrom);
     if(tid == (uint32_t) -1) return output;
-    output = calloc(1, sizeof(bwOverlapIterator_t));
+    output = (bwOverlapIterator_t*) calloc(1, sizeof(bwOverlapIterator_t));
     if(!output) return output;
     bwOverlapBlock_t *blocks = bwGetOverlappingBlocks(bw, chrom, start, end);
 
@@ -716,11 +716,11 @@ bwOverlappingIntervals_t *bwGetValues(bigWigFile_t *fp, char *chrom, uint32_t st
     bwOverlappingIntervals_t *intermediate = bwGetOverlappingIntervals(fp, chrom, start, end);
     if(!intermediate) return NULL;
 
-    output = calloc(1, sizeof(bwOverlappingIntervals_t));
+    output = (bwOverlappingIntervals_t*) calloc(1, sizeof(bwOverlappingIntervals_t));
     if(!output) goto error;
     if(includeNA) {
         output->l = end-start;
-        output->value = malloc(output->l*sizeof(float));
+        output->value = (float*) malloc(output->l*sizeof(float));
         if(!output->value) goto error;
         for(i=0; i<output->l; i++) output->value[i] = NAN;
         for(i=0; i<intermediate->l; i++) {
@@ -737,9 +737,9 @@ bwOverlappingIntervals_t *bwGetValues(bigWigFile_t *fp, char *chrom, uint32_t st
             n += intermediate->end[i]-intermediate->start[i];
         }
         output->l = n;
-        output->start = malloc(sizeof(uint32_t)*n);
+        output->start = (uint32_t*) malloc(sizeof(uint32_t)*n);
         if(!output->start) goto error;
-        output->value = malloc(sizeof(float)*n);
+        output->value = (float*) malloc(sizeof(float)*n);
         if(!output->value) goto error;
         n = 0; //this is now the index
         for(i=0; i<intermediate->l; i++) {

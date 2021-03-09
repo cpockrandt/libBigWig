@@ -55,7 +55,7 @@ size_t url_fread(void *obuf, size_t obufSize, URL_t *URL) {
             if(rv != CURLE_OK) {
                 fprintf(stderr, "[url_fread] urlFetchData (A) returned %s\n", curl_easy_strerror(rv));
                 return 0;
-            }  
+            }
         } else if(URL->bufLen < URL->bufPos + remaining) { //Copy the remaining buffer and reload the buffer as needed
             p = memcpy(p, URL->memBuf+URL->bufPos, URL->bufLen - URL->bufPos);
             if(!p) return 0;
@@ -159,7 +159,7 @@ CURLcode urlSeek(URL_t *URL, size_t pos) {
 }
 
 URL_t *urlOpen(char *fname, CURLcode (*callBack)(CURL*), const char *mode) {
-    URL_t *URL = calloc(1, sizeof(URL_t));
+    URL_t *URL = (URL_t*) calloc(1, sizeof(URL_t));
     if(!URL) return NULL;
     char *url = NULL, *req = NULL;
 #ifndef NOCURL

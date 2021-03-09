@@ -58,21 +58,21 @@ void bwCleanup() {
 static bwZoomHdr_t *bwReadZoomHdrs(bigWigFile_t *bw) {
     if(bw->isWrite) return NULL;
     uint16_t i;
-    bwZoomHdr_t *zhdr = malloc(sizeof(bwZoomHdr_t));
+    bwZoomHdr_t *zhdr = (bwZoomHdr_t*) malloc(sizeof(bwZoomHdr_t));
     if(!zhdr) return NULL;
-    uint32_t *level = malloc(bw->hdr->nLevels * sizeof(uint64_t));
+    uint32_t *level = (uint64_t*) malloc(bw->hdr->nLevels * sizeof(uint64_t));
     if(!level) {
         free(zhdr);
         return NULL;
     }
     uint32_t padding = 0;
-    uint64_t *dataOffset = malloc(sizeof(uint64_t) * bw->hdr->nLevels);
+    uint64_t *dataOffset = (uint64_t*) malloc(sizeof(uint64_t) * bw->hdr->nLevels);
     if(!dataOffset) {
         free(zhdr);
         free(level);
         return NULL;
     }
-    uint64_t *indexOffset = malloc(sizeof(uint64_t) * bw->hdr->nLevels);
+    uint64_t *indexOffset = (uint64_t*) malloc(sizeof(uint64_t) * bw->hdr->nLevels);
     if(!indexOffset) {
         free(zhdr);
         free(level);
@@ -90,7 +90,7 @@ static bwZoomHdr_t *bwReadZoomHdrs(bigWigFile_t *bw) {
     zhdr->level = level;
     zhdr->dataOffset = dataOffset;
     zhdr->indexOffset = indexOffset;
-    zhdr->idx = calloc(bw->hdr->nLevels, sizeof(bwRTree_t*));
+    zhdr->idx = (bwRTree_t**) calloc(bw->hdr->nLevels, sizeof(bwRTree_t*));
     if(!zhdr->idx) goto error;
 
     return zhdr;
@@ -124,7 +124,7 @@ static void bwHdrDestroy(bigWigHdr_t *hdr) {
 static void bwHdrRead(bigWigFile_t *bw) {
     uint32_t magic;
     if(bw->isWrite) return;
-    bw->hdr = calloc(1, sizeof(bigWigHdr_t));
+    bw->hdr = (bigWigHdr_t*) calloc(1, sizeof(bigWigHdr_t));
     if(!bw->hdr) return;
 
     if(bwRead((void*) &magic, sizeof(uint32_t), 1, bw) != 1) goto error; //0x0
@@ -187,7 +187,7 @@ static uint64_t readChromLeaf(bigWigFile_t *bw, chromList_t *cl, uint32_t valueS
     char *chrom = NULL;
 
     if(bwRead((void*) &nVals, sizeof(uint16_t), 1, bw) != 1) return -1;
-    chrom = calloc(valueSize+1, sizeof(char));
+    chrom = (char*)calloc(valueSize+1, sizeof(char));
     if(!chrom) return -1;
 
     for(i=0; i<nVals; i++) {
@@ -244,7 +244,7 @@ static chromList_t *bwReadChromList(bigWigFile_t *bw) {
     if(bw->isWrite) return NULL;
     if(bwSetPos(bw, bw->hdr->ctOffset)) return NULL;
 
-    cl = calloc(1, sizeof(chromList_t));
+    cl = (chromList_t*) calloc(1, sizeof(chromList_t));
     if(!cl) return NULL;
 
     if(bwRead((void*) &magic, sizeof(uint32_t), 1, bw) != 1) goto error;
@@ -256,8 +256,8 @@ static chromList_t *bwReadChromList(bigWigFile_t *bw) {
     if(bwRead((void*) &itemCount, sizeof(uint64_t), 1, bw) != 1) goto error;
 
     cl->nKeys = itemCount;
-    cl->chrom = calloc(itemCount, sizeof(char*));
-    cl->len = calloc(itemCount, sizeof(uint32_t));
+    cl->chrom = (char**) calloc(itemCount, sizeof(char*));
+    cl->len = (uint32_t*) calloc(itemCount, sizeof(uint32_t));
     if(!cl->chrom) goto error;
     if(!cl->len) goto error;
 
@@ -317,7 +317,7 @@ char *bbGetSQL(bigWigFile_t *bw) {
     uint64_t len;
     if(!bw->hdr->sqlOffset) return NULL;
     len = bw->hdr->summaryOffset - bw->hdr->sqlOffset; //This includes the NULL terminator
-    o = malloc(sizeof(char) * len);
+    o = (char*) malloc(sizeof(char) * len);
     if(!o) goto error;
     if(bwSetPos(bw, bw->hdr->sqlOffset)) goto error;
     if(bwRead((void*) o, len, 1, bw) != 1) goto error;
@@ -343,7 +343,7 @@ int bbIsBigBed(char *fname, CURLcode (*callBack) (CURL*)) {
 }
 
 bigWigFile_t *bwOpen(char *fname, CURLcode (*callBack) (CURL*), const char *mode) {
-    bigWigFile_t *bwg = calloc(1, sizeof(bigWigFile_t));
+    bigWigFile_t *bwg = (bigWigFile_t*) calloc(1, sizeof(bigWigFile_t));
     if(!bwg) {
         fprintf(stderr, "[bwOpen] Couldn't allocate space to create the output object!\n");
         return NULL;
@@ -382,7 +382,7 @@ bigWigFile_t *bwOpen(char *fname, CURLcode (*callBack) (CURL*), const char *mode
         bwg->isWrite = 1;
         bwg->URL = urlOpen(fname, NULL, "w+");
         if(!bwg->URL) goto error;
-        bwg->writeBuffer = calloc(1,sizeof(bwWriteBuffer_t));
+        bwg->writeBuffer = (bwWriteBuffer_t*) calloc(1,sizeof(bwWriteBuffer_t));
         if(!bwg->writeBuffer) goto error;
         bwg->writeBuffer->l = 24;
     }
@@ -395,7 +395,7 @@ error:
 }
 
 bigWigFile_t *bbOpen(char *fname, CURLcode (*callBack) (CURL*)) {
-    bigWigFile_t *bb = calloc(1, sizeof(bigWigFile_t));
+    bigWigFile_t *bb = (bigWigFile_t*) calloc(1, sizeof(bigWigFile_t));
     if(!bb) {
         fprintf(stderr, "[bbOpen] Couldn't allocate space to create the output object!\n");
         return NULL;
