@@ -60,7 +60,7 @@ static bwZoomHdr_t *bwReadZoomHdrs(bigWigFile_t *bw) {
     uint16_t i;
     bwZoomHdr_t *zhdr = (bwZoomHdr_t*) malloc(sizeof(bwZoomHdr_t));
     if(!zhdr) return NULL;
-    uint32_t *level = (uint64_t*) malloc(bw->hdr->nLevels * sizeof(uint64_t));
+    uint32_t *level = (uint32_t*) malloc(bw->hdr->nLevels * sizeof(uint64_t));
     if(!level) {
         free(zhdr);
         return NULL;

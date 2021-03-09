@@ -596,7 +596,7 @@ static bwRTreeNode_t *makeEmptyNode(uint32_t blockSize) {
     if(!n->baseEnd) goto error;
     n->dataOffset = (uint64_t*) calloc(blockSize,sizeof(uint64_t)); //This MUST be 0 for node writing!
     if(!n->dataOffset) goto error;
-    n->x.child = (uint64_t*) malloc(blockSize*sizeof(uint64_t));
+    n->x.child = (bwRTreeNode_t**) malloc(blockSize*sizeof(uint64_t));
     if(!n->x.child) goto error;
 
     return n;

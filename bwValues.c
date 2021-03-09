@@ -651,7 +651,7 @@ void bwIteratorDestroy(bwOverlapIterator_t *iter) {
 //On error, points to NULL and destroys the input
 bwOverlapIterator_t *bwIteratorNext(bwOverlapIterator_t *iter) {
     uint64_t n, *offset, *size;
-    bwOverlapBlock_t *blocks = iter->blocks;
+    bwOverlapBlock_t *blocks = (bwOverlapBlock_t*) iter->blocks;
 
     if(iter->intervals) {
         bwDestroyOverlappingIntervals(iter->intervals);
