@@ -104,7 +104,7 @@ size_t bwFillBuffer(void *inBuf, size_t l, size_t nmemb, void *pURL) {
     size_t copied = l*nmemb;
     if(!p) return 0;
 
-    p += URL->bufLen;
+    p = (char*)p + URL->bufLen;
     if(l*nmemb > URL->bufSize - URL->bufPos) { //We received more than we can store!
         copied = URL->bufSize - URL->bufLen;
     }
